@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+    排行榜
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="pages">
+                <div class="header">
+                    <div class="nav">
+                        <div class="col-xs-7">
+                            <ul class="list-unstyled list-inline">
+                                <li>
+                                    <h3 class="logo">{{ march_name }}</h3>
+                                </li>
+                                <li class="badge"> 结束时间 {{ end_time }} </li>
+                            </ul>
+                        </div>
+                        <div class="col-xs-2">
+                            <ul class="list-unstyled list-inline">
+                                <li class="pull-right">
+                                    <a href="{{ url_for('display.result') }}" class="menu">
+                                        我的成绩
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <div class="col-xs-9 nopadding" style="width: 100%">
+                        <div class="content-box padding">
+                            <ul class="list-unstyled list-img">
+                                <li class="border padding">
+                                    <div class="desc">
+                                        <p>
+                                            您的分数：<span class="text-warning">{{ score }}</span>
+                                            您的名次：<span class="text-warning">{{ ranking }}</span>
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="border">
+                                    <div class="desc">
+                                        <table class="table table-bordered table-hover">
+                                            <tr class="info">
+                                                <td width="80">名次</td>
+                                                <td>姓名</td>
+                                                <td>得分</td>
+                                                <td>提交时间</td>
+                                                <td width="120">用时</td>
+                                            </tr>
+                                            {% for user in users %}
+                                                <tr>
+                                                    <td>{{ user['ranking'] }}</td>
+                                                    <td>{{ user['username'] }}</td>
+                                                    <td>{{ user['score'] }}</td>
+                                                    <td>{{ user['finish_time'] }}</td>
+                                                    <td>{{ user['spend_time'] }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="pagination pull-right">
+                                {% if all_nums > 10 %}
+                                <li><a href="{{ url_for("display.score_board", page=1) }}" class="current">1</a></li>
+                                    {% if all_nums%10 == 0 %}
+                                        {% set page_nums = all_nums//10 %}
+                                    {% else %}
+                                        {% set page_nums = all_nums//10 + 1 %}
+                                    {% endif %}
+                                        {% for i in range(1, page_nums)%}
+                                            <li><a target="" href="{{ url_for("display.score_board", page=i + 1) }}">{{ i + 1 }}</a></li>
+                                        {% endfor %}
+                                <li><a>共{{ all_nums }}条数据</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

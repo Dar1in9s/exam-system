@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}登录{% endblock %}
+
+{% block body %}
+<div class="container-fluid" style="height: 100vh;background:radial-gradient(circle at 50% 30%, #4f4f7a, #000);">
+	<div class="row-fluid">
+		<div class="pages">
+			<div class="content" style="margin-top: 10vh;">
+				<div class="col-xs-3 padding"></div>
+				<div class="col-xs-6 nopadding">
+					<div class="content-box padding">
+						<h2 class="title">
+							用户登陆
+							<a href="{{ url_for('display.score_board') }}" class="badge pull-right">排行榜</a>
+						</h2>
+						<form method="post" action="{{ url_for('user.login') }}">
+							<fieldset class="logbox">
+								<div class="form-group underline">
+									<label class="block">
+										<div class="col-xs-4 tip">
+											用户名
+										</div>
+										<div class="col-xs-8">
+											<input placeholder="用户名/邮箱" class="noborder" name="username" datatype="userName" needle="needle" msg="请输入用户名">
+										</div>
+									</label>
+								</div>
+								<div class="form-group underline">
+									<label class="block">
+										<div class="col-xs-4 tip">
+											密码
+										</div>
+										<div class="col-xs-8">
+											<input placeholder="密码" type="password" name="password" datatype="password" needle="needle" msg="请输入密码">
+										</div>
+									</label>
+								</div>
+                                <div class="form-group text-center">
+									<button class="btn btn-primary login">登陆</button>
+									<input type="hidden" value="1" name="userlogin"/>
+								</div>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+				<div class="col-xs-3 padding"></div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

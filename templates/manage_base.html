@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}比赛管理{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="pages">
+            <div class="content">
+                <div class="col-xs-3" style="width: 20%">
+                    <div class="content-box padding">
+                        <h2 class="title">比赛管理</h2>
+                        <ul class="list-unstyled list-txt">
+                            <li id="match_info" class="border">
+                                <a href="{{ url_for('manage.match_info') }}">
+                                    <span class="glyphicon glyphicon-time"></span> 比赛信息
+                                </a>
+                            </li>
+                            <li id="question_add" class="border">
+                                <a href="{{ url_for('manage.question_add') }}">
+                                    <span class="glyphicon glyphicon-pencil"></span> 添加试题
+                                </a>
+                            </li>
+                            <li id="question_modify" class="border">
+                                <a href="{{ url_for('manage.question_modify') }}">
+                                    <span class="glyphicon glyphicon-refresh"></span> 修改试题
+                                </a>
+                            </li>
+                            <li id="question_libs" class="border">
+                                <a href="{{ url_for('manage.question_libs') }}">
+                                    <span class="glyphicon glyphicon-equalizer"></span> 试题库
+                                </a>
+                            </li>
+                            <li id="user_manage" class="border">
+                                <a href="{{ url_for('manage.user_manage') }}">
+                                    <span class="glyphicon glyphicon-baby-formula"></span> 用户管理
+                                </a>
+                            </li>
+                            <li id="clear_data" class="border">
+                                <a href="{{ url_for('manage.clear_data') }}">
+                                    <span class="glyphicon glyphicon-ruble"></span> 数据清理
+                                </a>
+                            </li>
+                            <li id="manage_logout" class="border">
+                                <a href="{{ url_for('user.logout') }}">
+                                    <span class="glyphicon glyphicon-alert"></span> 注销登陆
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+                {% block right %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function() {
+        $("#{% block active %}{% endblock %}").addClass("active");
+    });
+</script>
+{% endblock %}

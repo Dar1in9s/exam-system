@@ -1,0 +1,48 @@
+mysql:
+    users
+        id, username, password
+    score
+        username
+        score
+        start_time
+        finish_time
+        spend_time
+    match_info
+        match_start_time
+        match_end_time
+        match_duration
+        match_name
+        one_question_score
+        once_exam_nums
+    questions
+        id, description, answerA, answerB, answerC, answerD, answer
+redis:
+    question[i]（哈希）            存储题目数据
+        description
+        answerA
+        answerB
+        answerC
+        answerD
+        answer
+    user:user（哈希）              存储用户数据
+        start_time   开始时间
+        finish_time  完成时间
+        spend_time   花费时间
+        score        成绩
+        marki        用户的标记
+        question[i]  用户的答案
+    user_question_id:user（列表）  存储用户题目id
+    all_question_id（集合）        存储所有题目的id
+session:
+    user
+    is_admin
+
+
+
+
+
+
+
+
+
+

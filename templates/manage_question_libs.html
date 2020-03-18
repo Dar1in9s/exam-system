@@ -1,0 +1,117 @@
+{% extends "manage_base.html" %}
+
+{% block right %}
+<div class="col-xs-9 nopadding" style="width: 80%" id="datacontent">
+    <div class="content-box padding">
+        <h2 class="title">
+            试题库
+        </h2>
+        <ul class="list-unstyled list-img">
+            <li class="border">
+                <div class="desc">
+                        <table class="table">
+                            <tr class="noborder">
+                                <td width="120px">
+                                    按关键词搜索：
+                                </td>
+                                <td>
+                                    <input id="search_q_keywords" class="form-control" name="search_q_keywords" placeholder="关键词" >
+                                </td>
+                                <td width="100px">
+                                    按ID搜索：
+                                </td>
+                                <td>
+                                    <input id="search_q_id" placeholder="ID" class="form-control" name="search_q_id" type="number" autocomplete="off">
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary" onClick="search()">搜索</button>
+                                </td>
+                            </tr>
+                        </table>
+                </div>
+            </li>
+            <li class="border">
+                <div class="desc">
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr class="info">
+                                <th>ID </th>
+                                <th>题干</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for q in q_display %}
+                            <tr>
+                                <td width="70">{{ q["id"] }}</td>
+                                <td width="730">{{ q["description"] }}</td>
+                                <td width="150">
+                                    <button id="modify_{{ q["id"] }}" class="btn btn-primary" onClick="modify_click(this.id)" type="submit">修改</button>
+                                    <button id="del_{{ q["id"] }}" class="btn btn-primary" onClick="del_click(this.id)" type="submit">删除</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <ul class="pagination pull-right">
+                    {% if page_nums > 1 %}
+                        {% for i in range(1, page_nums + 1) %}
+                            {% if i == now_page %}
+                            <li><a href="#" class="current">{{i}}</a></li>
+                            {% else %}
+                            <li><a href="{{ url_for('manage.question_libs', page=i) }}">{{i}}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li></li>
+                    {% endif %}
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$(function(){
+    $("#search_q_id").bind('input porpertychange',function(){
+        document.getElementById("search_q_keywords").value="";
+    });
+    $("#search_q_keywords").bind('input porpertychange',function(){
+        document.getElementById("search_q_id").value="";
+    });
+});
+function StandardPost(url,args){
+        var body = $(document.body),
+            form = $("<form method='post'></form>"),
+            input;
+        form.attr({"action":url});
+        $.each(args,function(key,value){
+            input = $("<input type='hidden'>");
+            input.attr({"name":key});
+            input.val(value);
+            form.append(input);
+        });
+        form.appendTo(document.body);
+        form.submit();
+        document.body.removeChild(form[0]);
+}
+function del_q(id) {
+    submitAjax({"url":"{{ url_for('manage.question_del') }}", "query":{"del_id":id}});
+}
+function modify_click(id) {
+    StandardPost("{{ url_for('manage.question_modify') }}", {"search_id":id.substr(7)});
+}
+function del_click(id) {
+     $.zoombox.show('confirm',{"msg":"确定要删除吗？","func":"del_q("+id.substr(4)+")"});
+}
+function search() {
+    search_q_keywords = document.getElementById("search_q_keywords").value;
+    search_q_id = document.getElementById("search_q_id").value;
+    StandardPost("{{ url_for('manage.question_libs') }}",{"search_q_keywords":search_q_keywords, "search_q_id":search_q_id});
+}
+</script>
+{% endblock %}
+
+{% block active %}question_libs{% endblock %}

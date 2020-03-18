@@ -1,0 +1,163 @@
+{% extends "manage_base.html" %}
+
+{% block right %}
+<div class="col-xs-9 nopadding" style="width: 80%" id="datacontent">
+                    <div class="content-box padding">
+                        <h2 class="title">
+                            修改试题
+                        </h2>
+                        <ul class="list-unstyled list-img">
+                            <li class="border">
+                                <div class="desc">
+                                    <table class="table">
+                                        <tbody>
+                                        <tr>
+                                            <td>ID:</td>
+                                            <td>
+                                                <input id="search_id" placeholder="ID" class="form-control" name="q_id" type="number" needle="needle"
+                                                    msg="请输入要修改的题目id" autocomplete="off">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary" type="submit" onclick="search_click()" autocomplete="off">搜索</button>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary" type="submit"onclick="modify_click()" autocomplete="off">修改题目</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                题干：
+                                            </td>
+                                            <td>
+                                                <textarea id="search_description" class="form-control" name="description" rows="1" cols="30" placeholder="请输入题干" needle="needle"
+                                                    msg="请输入题干" autocomplete="off"></textarea>
+                                            </td>
+                                            <td>
+                                                正确答案：
+                                            </td>
+                                            <td>
+                                                <select name="answer" class="combox form-control" id="search_answer" target="knowsselect"
+                                                    autocomplete="off">
+                                                    <option value="A">A</option>
+                                                    <option value="B">B</option>
+                                                    <option value="C">C</option>
+                                                    <option value="D">D</option>
+                                                </select>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                选项A:
+                                            </td>
+                                            <td>
+                                                <input id="search_answerA" placeholder="选项A" class="form-control" name="answerA" type="text" needle="needle" msg="请输入选项A"
+                                                    autocomplete="off">
+                                            </td>
+                                            <td>
+                                                选项B:
+                                            </td>
+                                            <td>
+                                                <input id="search_answerB" placeholder="选项B" class="form-control" name="answerB" type="text" needle="needle" msg="请输入选项B"
+                                                    autocomplete="off">
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                选项C:
+                                            </td>
+                                            <td>
+                                                <input id="search_answerC" placeholder="选项C" class="form-control" name="answerC" type="text" needle="needle" msg="请输入选项C"
+                                                    autocomplete="off">
+                                            </td>
+                                            <td>
+                                                选项D:
+                                            </td>
+                                            <td>
+                                                <input id="search_answerD" placeholder="选项D" class="form-control" name="answerD" type="text" needle="needle" msg="请输入选项D"
+                                                    autocomplete="off">
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+{% endblock %}
+
+{% block script %}
+<script>
+
+function StandardPost(url,args){
+        var body = $(document.body),
+            form = $("<form method='post'></form>"),
+            input;
+        form.attr({"action":url});
+        $.each(args,function(key,value){
+            input = $("<input type='hidden'>");
+            input.attr({"name":key});
+            input.val(value);
+            form.append(input);
+        });
+
+        form.appendTo(document.body);
+        form.submit();
+        document.body.removeChild(form[0]);
+}
+
+function search_click() {
+    id = document.getElementById("search_id").value.trim();
+    if(id) {
+        StandardPost("{{ url_for('manage.question_modify') }}", {"search_id": id});
+    }else {$.zoombox.show('ajax',{"message":"请输入ID"});}
+}
+function modify_click() {
+    id = $("#search_id").val().trim();
+    description = $("#search_description").val().trim();
+    answer = $("#search_answer").val().trim();
+    answerA = $("#search_answerA").val().trim();
+    answerB = $("#search_answerB").val().trim();
+    answerC = $("#search_answerC").val().trim();
+    answerD = $("#search_answerD").val().trim();
+    data = {
+        "id":id,
+        "description": description,
+        "answer": answer,
+        "answerA": answerA,
+        "answerB": answerB,
+        "answerC": answerC,
+        "answerD": answerD,
+    };
+    if(id) {
+        if(description){
+            if(answerA){
+                if(answerB) {
+                    if(answerC) {
+                        if (answerD) {
+                            submitAjax({"url": "{{ url_for('manage.question_modify') }}", "query": data});
+                        } else {$.zoombox.show('ajax',{"message":"请输入选项D"});}
+                    }else {$.zoombox.show('ajax',{"message":"请输入选项C"});}
+                }else {$.zoombox.show('ajax',{"message":"请输入选项B"});}
+            }else {$.zoombox.show('ajax',{"message":"请输入选项A"});}
+        }else {$.zoombox.show('ajax',{"message":"请输入题干"});}
+    }else {$.zoombox.show('ajax',{"message":"请输入ID"});}
+}
+
+{% if q_search %}
+    $(function() {
+        $("#search_id").val("{{ q_search["id"] }}");
+        $("#search_description").val("{{ q_search["description"] }}");
+        $("#search_answer").val("{{ q_search["answer"] }}");
+        $("#search_answerA").val("{{ q_search["answerA"] }}");
+        $("#search_answerB").val("{{ q_search["answerB"] }}");
+        $("#search_answerC").val("{{ q_search["answerC"] }}");
+        $("#search_answerD").val("{{ q_search["answerD"] }}");
+    });
+{% endif %}
+</script>
+{% endblock %}
+
+{% block active %}question_modify{% endblock %}

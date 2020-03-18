@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+    成绩
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="pages">
+                <div class="header">
+                    <div class="nav">
+                        <div class="col-xs-7">
+                            <ul class="list-unstyled list-inline">
+                                <li>
+                                    <h3 class="logo">{{march_name}}</h3>
+                                </li>
+                                <li class="badge">
+                                    结束时间 {{ end_time }} </li>
+                            </ul>
+                        </div>
+                        <div class="col-xs-2">
+                            <ul class="list-unstyled list-inline">
+                                <li class="pull-right">
+                                    <a href="{{ url_for('display.score_board') }}" class="menu">
+                                        排行榜
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-xs-2">
+                            <ul class="list-unstyled list-inline">
+                                <li class="pull-left">
+                                    <a href="{{ url_for('user.logout') }}" class="menu">
+                                        注销
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="col-xs-9 nopadding" style="width: 100%">
+                        <div class="content-box padding">
+                            <h2 class="title">
+                                成绩单
+                            </h2>
+                            <ul class="list-unstyled list-img">
+                                <li class="border">
+                                    <h3 class="shorttitle text-center">{{ march_name }}</h3>
+                                    <div class="col-xs-4">
+                                        <h1 class="text-center text-danger">{{ score }} 分</h1>
+                                    </div>
+                                    <div class="col-xs-12">
+                                        <h5 class="text-info padding">得分详情：</h5>
+                                        <table class="table table-hover table-bordered">
+                                            <tr class="info">
+                                                <th>题型</th>
+                                                <th>总题数</th>
+                                                <th>答对题数</th>
+                                                <th>总分</th>
+                                                <th>得分</th>
+                                            </tr>
+                                            <tr>
+                                                <td>单选题</td>
+                                                <td>{{ once_exam_nums }}</td>
+                                                <td>{{ question_right_num }}</td>
+                                                <td>{{ total_score }}</td>
+                                                <td>{{ score }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5" align="left">本次考试共<b class="text-warning">{{ once_exam_nums }}</b>道题，总分<b
+                                                        class="text-warning">{{ total_score }}</b>分，您做对<b
+                                                        class="text-warning">{{ question_right_num }}</b>道题，得到<b class="text-warning">{{score}}</b>分，
+                                                    答卷耗时：<b class="text-warning">{{ spend_time }}</b>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "manage_base.html" %}
+{% block right %}
+    <div class="col-xs-9 nopadding" style="width: 80%">
+    <div class="content-box padding">
+        <h2 class="title">比赛信息</h2>
+        <form action="{{ url_for('manage.match_info') }}" method="post">
+            <fieldset class="logbox">
+                <div class="form-group underline">
+                    <label class="block">
+                        <div class="col-xs-4 tip">
+                            开始时间
+                        </div>
+                        <div class="col-xs-8 form-inline">
+                            <input type="datetime-local" name="match_start_time" value="{{ match_start_time }}"
+                                class="form-control" needle="needle" msg="请输入比赛开始时间" style="line-height:30px;" />
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group underline">
+                    <label class="block">
+                        <div class="col-xs-4 tip">
+                            结束时间
+                        </div>
+                        <div class="col-xs-8 form-inline">
+                            <input type="datetime-local" name="match_end_time" value="{{ match_end_time }}"
+                                class="form-control" needle="needle" msg="请输入比赛结束时间" style="line-height:30px;" />
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group underline">
+                    <label class="block">
+                        <div class="col-xs-4 tip">
+                            比赛名称
+                        </div>
+                        <div class="col-xs-8 form-inline">
+                            <input placeholder="填写比赛名称" type="text" name="match_name" value="{{ match_name }}"
+                                class="form-control" needle="needle" msg="请输入比赛名称" />
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group underline">
+                    <label class="block">
+                        <div class="col-xs-4 tip">
+                            做题时间
+                        </div>
+                        <div class="col-xs-8 form-inline">
+                            <input type="text" name="match_duration" class="form-control text-center"
+                                datatype="number" min="1" needle="needle" msg="请输入做题时间" size="2"
+                                value='{{ match_duration }}' /> 分钟
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group underline">
+                    <label class="block">
+                        <div class="col-xs-4 tip">
+                            抽题数量
+                        </div>
+                        <div class="col-xs-8 form-inline">
+                            <input type="text" name="once_exam_nums" class="form-control text-center"
+                                datatype="number" min="1" needle="needle" msg="请输入抽题数量" size="2"
+                                value='{{ once_exam_nums }}' />
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group underline">
+                    <label class="block">
+                        <div class="col-xs-4 tip">
+                            每题分值
+                        </div>
+                        <div class="col-xs-8 form-inline">
+                            <input type="text" name="one_question_score" class="form-control text-center"
+                                datatype="number" min="1" needle="needle" msg="请输入分值" size="2"
+                                value='{{ one_question_score }}' />
+                        </div>
+                    </label>
+                </div>
+
+                <div id="questionnumbers"></div>
+                <div class="form-group  text-right">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block active %}match_info{% endblock %}

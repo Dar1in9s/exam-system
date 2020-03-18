@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title%}答题{% endblock %}
+
+{% block body %}
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="pages">
+				<div class="header navbar-fixed-top">
+					<div class="nav">
+						<div class="col-xs-9">
+							<ul class="list-unstyled list-inline">
+								<li>
+									<h3 class="logo">{{ match_name }}</h3>
+								</li>
+							</ul>
+						</div>
+						<div class="col-xs-3">
+							<ul class="list-unstyled list-inline">
+								<li>
+									<h3 class="logo"><span id="timer_h">00</span>：<span id="timer_m">00</span>：<span
+											id="timer_s">00</span></h3>
+								</li>
+                                {% if match_not_start == True %}
+                                {% else %}
+                                    <li class="pull-right">
+									<a href="javascript:;" onclick="javascript:$('#submodal').modal();" class="menu">
+										<span class="glyphicon glyphicon-print"></span> 交卷
+									</a>
+								</li>
+                                {% endif %}
+							</ul>
+						</div>
+					</div>
+				</div>
+                {% if match_not_start == True %}
+				    <div class="content fixtop">
+                    未到答题时间
+                    </div>
+                {% else %}
+                    <div class="content fixtop">
+					<div class="col-xs-3">
+						<div class="content-box padding" id="questionindex" data-spy="affix">
+							<h3 class="title">
+								一、单选题<a class="badge pull-right resize">
+                                <em class="glyphicon glyphicon-resize-full"></em></a>
+							</h3>
+							<ul class="list-unstyled list-img">
+								<li id="qt_1">
+                                    {% for i in range(1, questions|length + 1) %}
+									<a id="sign_{{ questions[i-1].id }}" href="#q_{{ i }}" class="btn btn-default qindex">{{ i }}</a>
+                                    {% endfor %}
+								</li>
+
+							</ul>
+
+						</div>
+					</div>
+
+					<form method="post" class="col-xs-9 nopadding" id="paper" action={{ url_for("exam.check_answers") }}>
+
+                        {% for i in range(1, questions|length + 1 ) %}
+                            <div class="content-box padding">
+                                <h2 class="title">
+                                    <a id="q_{{ i }}"></a>
+                                    第 {{ i }} 题 【 单选题：本大题共50小题，每小题2分，共100分。】
+                                    <a id="question_{{ i }}" class="badge pull-right" href="javascript:;"
+                                        onclick="javascript:signQuestion('{{ questions[i-1].id }}',this);">标记</a>
+                                </h2>
+                                <ul class="list-unstyled list-img">
+                                    <li class="border morepadding">
+                                        <div class="desc">
+                                            <p>{{ questions[i-1].description }}</p>
+                                        </div>
+                                    </li>
+                                    <li class="border morepadding">
+                                        <div class="desc">
+                                            <p>
+                                                <p>A. {{ questions[i-1].answerA }}</p>
+                                                <p>B. {{ questions[i-1].answerB }}</p>
+                                                <p>C. {{ questions[i-1].answerC }}</p>
+                                                <p>D. {{ questions[i-1].answerD }}</p>
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <li class="border morepadding">
+                                        <div class="nopadding desc">
+                                            <label class="inline">
+                                                <input type="radio" name="question[{{ questions[i-1].id }}]" rel="{{ questions[i-1].id }}" value="A" />
+                                                <span class="selector">A</span>
+                                            </label>
+                                            <label class="inline">
+                                                <input type="radio" name="question[{{ questions[i-1].id }}]" rel="{{ questions[i-1].id }}" value="B" />
+                                                <span class="selector">B</span>
+                                            </label>
+                                            <label class="inline">
+                                                <input type="radio" name="question[{{ questions[i-1].id }}]" rel="{{ questions[i-1].id }}" value="C" />
+                                                <span class="selector">C</span>
+                                            </label>
+                                            <label class="inline">
+                                                <input type="radio" name="question[{{ questions[i-1].id }}]" rel="{{ questions[i-1].id }}" value="D" />
+                                                <span class="selector">D</span>
+                                            </label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        {% endfor %}
+						<input type="hidden" name="token" value="4517498fc15142177aaa89b427237407" />
+					</form>
+				</div>
+                {% endif %}
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="submodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">交卷</h4>
+				</div>
+				<div class="modal-body">
+					<p>共有试题 <span class="allquestionnumber">0</span> 题，已做 <span class="yesdonumber">0</span> 题。您确认要交卷吗？
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" onclick="javascript:submitPaper();" class="btn btn-primary">确定交卷</button>
+					<button aria-hidden="true" class="btn" type="button" data-dismiss="modal">再检查一下</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block script %}
+    <script>
+		$(function () {
+		    load_user_data();
+			$('#paper :radio').on('click', function () {
+			    saveanswer();
+                markQuestions();
+			});
+
+			$('body').delegate('#questionindex .resize', 'click', function () {
+				var that = $(this);
+				if (that.children('.glyphicon').hasClass('glyphicon-resize-full')) {
+					$('#questionindex .resize .glyphicon').removeClass('glyphicon-resize-full').addClass('glyphicon glyphicon-resize-small');
+					$('#questionindex').css('width', '1226px');
+				}
+				else {
+					$('#questionindex .resize .glyphicon').removeClass('glyphicon-resize-small').addClass('glyphicon glyphicon-resize-full');
+					$('#questionindex').css('width', '280px');
+				}
+			});
+
+			$('body').delegate('#questionindex .qindex', 'click', function () {
+				$('#questionindex .resize .glyphicon').removeClass('glyphicon-resize-small').addClass('glyphicon glyphicon-resize-full');
+				$('#questionindex').css('width', '280px');
+			});
+
+			$('.allquestionnumber').html($('#questionindex .qindex').length);
+			$('.yesdonumber').html($('#questionindex .qindex.btn-primary').length);
+		});
+	</script>
+    {% if match_not_start == True %}
+        <script>
+    $(function () {
+        console.log("比赛未开始");
+        var setting = {
+            time: {{match_time_left}},
+            hbox: $("#timer_h"),
+            mbox: $("#timer_m"),
+            sbox: $("#timer_s"),
+            finish: function () {
+                location.reload();    // 到时间自动刷新
+            }
+        };
+        setting.lefttime = 0;
+        countdown(setting);
+    });
+    </script>
+	{% else %}
+        <script>
+		// 倒计时
+        console.log("比赛进行中");
+		$(function () {
+			$.get('{{url_for('exam.match_time')}}', function (data) {
+			    console.log(data);
+				var setting = {
+					time: data["match_duration"],
+					hbox: $("#timer_h"),
+					mbox: $("#timer_m"),
+					sbox: $("#timer_s"),
+					finish: function () {
+						submitPaper();    // 到时间自动提交
+					}
+				};
+				setting.lefttime = parseInt(data["left_time"]);
+				countdown(setting);
+			});
+
+		});
+	</script>
+    {% endif %}
+{% endblock %}

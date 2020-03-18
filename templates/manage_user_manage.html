@@ -1,0 +1,222 @@
+{% extends "manage_base.html" %}
+
+{% block right %}
+    <div class="col-xs-9 nopadding" style="width: 80%" id="datacontent">
+        <div class="content-box padding">
+            <h2 class="title">
+                用户管理
+            </h2>
+            <ul class="list-unstyled list-img">
+                <li class="border">
+                    <div class="desc">
+
+                        <table class="table">
+                            <tr class="noborder">
+                                <td width="120px">
+                                    按用户名搜索：
+                                </td>
+                                <td>
+                                    <input id="search_u_name" class="form-control"
+                                        name="search_user_name" placeholder="用户名">
+                                </td>
+                                <td width="100px">
+                                    按邮箱搜索：
+                                </td>
+                                <td>
+                                    <input id="search_u_email" placeholder="邮箱" class="form-control"
+                                        name="search_u_email" type="text" autocomplete="off">
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary" onClick="search_click()">搜索用户</button>
+                                </td>
+                            </tr>
+                            <tr class="noborder">
+                                <td width="120px">
+                                    用户名：
+                                </td>
+                                <td>
+                                    <input id="add_u_name" class="form-control"
+                                        name="add_user_name" placeholder="用户名">
+                                </td>
+                                <td width="100px">
+                                    邮箱：
+                                </td>
+                                <td>
+                                    <input id="add_u_email" placeholder="邮箱" class="form-control"
+                                        name="add_u_email" type="text" autocomplete="off">
+                                </td>
+                                <td width="100px">
+                                    密码：
+                                </td>
+                                <td>
+                                    <input id="add_u_password" placeholder="密码" class="form-control"
+                                        name="add_u_password" type="text" autocomplete="off">
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary" onClick="add_click()">添加用户</button>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </li>
+                <li class="border">
+                    <div class="desc">
+                        <table class="table table-hover table-bordered">
+                            <thead>
+                                <tr class="info">
+                                    <th>ID </th>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>密码</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in u_display %}
+                                <tr>
+                                    <td width="70px">
+                                        <input id="id_{{ user['id'] }}" placeholder="ID" value="{{ user['id'] }}" readonly="readonly" class="form-control" name="id" type="text" autocomplete="off">
+                                    </td>
+                                    <td>
+                                        <input id="username_{{ user['id'] }}" placeholder="用户名" value="{{ user['username'] }}" class="form-control" name="username" type="text" autocomplete="off">
+                                    </td>
+                                    <td>
+                                        <input id="email_{{ user['id'] }}" placeholder="邮箱" value="{{ user['email'] }}" class="form-control" name="email" type="text" autocomplete="off">
+                                    </td>
+                                    <td>
+                                        <input id="password_{{ user['id'] }}" placeholder="密码" value="{{ user['password'] }}" class="form-control" name="password" type="text" autocomplete="off">
+                                    </td>
+                                    <td>
+                                        <button id="modify_{{ user['id'] }}" class="btn btn-primary" onClick="modify_click(this.id)" type="submit">修改</button>
+                                        <button id="del_{{ user['id'] }}" class="btn btn-primary" onClick="del_click(this.id)" type="submit">删除</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <ul class="pagination pull-right">
+                            {% if page_nums>1 %}
+                                {% for i in range(1, page_nums + 1) %}
+                                    {% if i == now_page %}
+                                        <li><a href="#" class="current">{{ i }}</a></li>
+                                    {% else %}
+                                        <li><a href="{{ url_for('manage.user_manage', page=i) }}">{{i}}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+$(function(){
+    $("#search_u_name").bind('input porpertychange',function(){
+        document.getElementById("search_u_email").value="";
+    });
+    $("#search_u_email").bind('input porpertychange',function(){
+        document.getElementById("search_u_name").value="";
+    });
+});
+function isEmail(mail) {
+    var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    if (filter.test(mail)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+function StandardPost(url,args){
+        var body = $(document.body),
+            form = $("<form method='post'></form>"),
+            input;
+        form.attr({"action":url});
+        $.each(args,function(key,value){
+            input = $("<input type='hidden'>");
+            input.attr({"name":key});
+            input.val(value);
+            form.append(input);
+        });
+        form.appendTo(document.body);
+        form.submit();
+        document.body.removeChild(form[0]);
+}
+function del(id) {
+    del_data={
+        "action":"delete",
+        "del_id":id
+    };
+    submitAjax({"url":"{{ url_for('manage.user_manage') }}", "query":del_data});
+}
+function modify(id) {
+    modify_id = id;
+    modify_username = $("#username_" + id).val();
+    modify_email = $("#email_" + id).val();
+    modify_password = $("#password_" + id).val();
+    modify_data = {
+            "action":"modify",
+            "modify_id": modify_id,
+            "modify_username": modify_username,
+            "modify_email": modify_email,
+            "modify_password": modify_password
+        };
+    submitAjax({"url":"{{ url_for('manage.user_manage') }}", "query":modify_data});
+
+}
+
+function modify_click(id) {
+    id = id.substr(7);
+    modify_username = $("#username_" + id).val();
+    modify_email = $("#email_" + id).val();
+    modify_password = $("#password_" + id).val();
+    if(isEmail(modify_email)){
+        if(modify_password != ""){
+            if(modify_username != "") {
+                $.zoombox.show('confirm',{"msg":"确定要修改吗？","func":"modify("+id+")"});
+            }else {$.zoombox.show('ajax',{"message":"请输入用户名"});}
+        }else{$.zoombox.show('ajax',{"message":"请输入密码"});}
+    }else {$.zoombox.show('ajax',{"message":"请正确输入邮箱"});}
+}
+function del_click(id) {
+    $.zoombox.show('confirm',{"msg":"确定要删除吗？","func":"del("+id.substr(4)+")"});
+}
+
+function search_click() {
+    search_u_name = $("#search_u_name").val();
+    search_u_email = $("#search_u_email").val();
+    search_data={
+        "action":"search",
+        "search_u_name":search_u_name,
+        "search_u_email":search_u_email
+    };
+    StandardPost("{{ url_for('manage.user_manage') }}",search_data);
+}
+function add_click() {
+    add_u_name = $("#add_u_name").val();
+    add_u_email = $("#add_u_email").val();
+    add_u_password = $("#add_u_password").val();
+    add_data = {
+        "action":"add",
+        "add_u_name":add_u_name,
+        "add_u_email":add_u_email,
+        "add_u_password":add_u_password,
+    };
+    if(isEmail(add_u_email)){
+        if(add_u_password != ""){
+            if(add_u_name != "") {
+                submitAjax({"url": "{{ url_for('manage.user_manage') }}", "query": add_data});
+            }else {$.zoombox.show('ajax',{"message":"请输入用户名"});}
+        }else{$.zoombox.show('ajax',{"message":"请输入密码"});}
+    }else {$.zoombox.show('ajax',{"message":"请正确输入邮箱"});}
+
+}
+
+</script>
+{% endblock %}
+{% block active %}user_manage{% endblock %}

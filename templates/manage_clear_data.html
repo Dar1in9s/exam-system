@@ -1,0 +1,75 @@
+{% extends "manage_base.html" %}
+
+{% block right %}
+<div class="col-xs-9 nopadding" style="width: 80%" id="datacontent">
+    <div class="content-box padding">
+        <h2 class="title">数据清理</h2>
+        <ul class="list-unstyled list-img">
+            <li class="border">
+                <div class="desc">
+                    <form action="{{ url_for('manage.clear_data') }}" method="post" class="form-inline">
+                        <table class="table">
+                            <tbody>
+                                <tr class="noborder">
+                                    <td>
+                                        <label class="inline">
+                                            <input type="checkbox" name="del_all_question"  value="1" autocomplete="off">
+                                            <span class="selector">删除所有题目</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label class="inline">
+                                            <input id="del_all_user_data" type="checkbox"  name="del_all_user_data" value="1" autocomplete="off">
+                                            <span class="selector">删除所有用户的成绩和作答信息</span>
+                                        </label>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label class="inline">
+                                            <input type="checkbox"  name="del_match_info"  value="1" autocomplete="off">
+                                            <span class="selector">删除比赛信息</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label class="inline">
+                                            <input id="del_all_user" type="checkbox"  name="del_all_user"  value="1" autocomplete="off">
+                                            <span class="selector">删除所有用户</span>
+                                        </label>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <button class="btn btn-primary" type="submit" autocomplete="off">确定</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script>
+    $("#del_all_user").change(function() {
+        if($("#del_all_user").prop("checked")){
+            $("#del_all_user_data").prop("checked",true);
+        }
+    });
+    $("#del_all_user_data").click(function() {
+        if($("#del_all_user").prop("checked")){
+            $("#del_all_user_data").prop("checked",true);
+        }
+    });
+    </script>
+{% endblock %}
+{% block active %}clear_data{% endblock %}
