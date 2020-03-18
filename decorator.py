@@ -3,7 +3,7 @@ from exts import r, app, str2timestamp
 import time
 
 
-# 检查是否登录
+# 检查是否登录 【未登录 --> user.login】
 def check_login(func):
     def check():
         try:
@@ -14,7 +14,7 @@ def check_login(func):
     return check
 
 
-# 检查是否已经开始答题，没有答题就去答题页面
+# 检查是否已经开始答题 【未开始答题 --> exam.exam】
 def check_start_exam(func):
     def check():
         if not r.hexists("user:" + session["user"], "start_time"):
@@ -23,7 +23,7 @@ def check_start_exam(func):
     return check
 
 
-# 检查是否已经答过题了,如果已经答完题目就去结果页面
+# 检查是否已经答过题了 【已经完成了题目 --> display.result】
 def check_finished_exam(func):
     def check():
         if r.hexists("user:"+session["user"], "finish_time"):
@@ -32,9 +32,26 @@ def check_finished_exam(func):
     return check
 
 
-# 比赛时间的检查
-def check_match_time(func):
+# 检查是否超出了最大答题时长 【超出了设置的答题时长 --> exam.check_answers】
+def check_timeout(func):
     def check():
+        has_started = r.hexists("user:"+session["user"], "start_time")
+        has_finished = r.hexists("user:"+session["user"], "finish_time")
+        if has_started and not has_finished:
+            start_time = int(r.hget("user:"+session["user"], "start_time"))
+            now_time = int(time.time())
+            spend_time = now_time - start_time
+            if spend_time > app.config["match_duration"]*60:      # 答题时长超出了设置的答题时长
+                return redirect(url_for("exam.check_answers"))
+            else:
+                return func()
+        return func()
+    return check
+
+
+# 比赛状态的检查 【结束了但还未开始答题 --> display.score_board、未开始 --> 倒计时、没有正确配置 --> "管理未正确配置比赛"】
+def check_match_status(func):
+    def check_match_time():
         start_time = str2timestamp(app.config['match_start_time'])
         end_time = str2timestamp(app.config['match_end_time'])
         now_time = int(time.time())
@@ -49,9 +66,9 @@ def check_match_time(func):
             return render_template("exam.html", **data)
         elif now_time > end_time:
             # 已结束
-            if r.hexists("user:"+session["user"], "start_time"):
+            if r.hexists("user:"+session["user"], "start_time"):  # 结束但已经开始答题了，继续答题
                 return func()
-            else:
+            else:                                                 # 结束了但还未开始答题
                 r.hset("user:"+session["user"], "score", 0)
                 r.hset("user:"+session["user"], "start_time", 0)
                 r.hset("user:"+session["user"], "finish_time", 0)
@@ -60,10 +77,19 @@ def check_match_time(func):
         else:
             # 进行中
             return func()
+
+    def check():
+        if app.config["match_start_time"] != '0':
+            if app.config["match_duration"] != 0:
+                if app.config["once_exam_nums"] != 0:
+                    if app.config["one_question_score"] != 0:
+                        return check_match_time()
+        return "管理未正确配置比赛"
+
     return check
 
 
-# 检查是否是管理员
+# 检查是否是管理员 【不是管理员 --> 'admin only'】
 def check_is_admin(func):
     def check():
         if session["is_admin"]:
@@ -71,17 +97,3 @@ def check_is_admin(func):
         return "admin only"
     return check
 
-
-# 检查管理员是否配置了比赛信息
-def check_init_match(func):
-    def check():
-        if app.config["match_start_time"] == '0':
-            return "管理员设置开始时间"
-        if app.config["match_duration"] == 0:
-            return "管理员未设置做题时间"
-        if app.config["once_exam_nums"] == 0:
-            return "管理员未设置题目数量"
-        if app.config["one_question_score"] == 0:
-            return "管理员未设置每题分值"
-        return func()
-    return check

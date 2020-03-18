@@ -1,14 +1,16 @@
 from flask import Blueprint, session, redirect, url_for, render_template, request
-from decorator import check_login, check_init_match
+from decorator import check_login, check_match_status
 from module import Score
 from exts import r, app, sec2str, timestamp2str
 
 display = Blueprint("display", __name__)
 
-# 答题结果展示
+# 答题结果展示 【已登录，比赛状态正常，已完成】
+# exam.exam、display.score_board --> this
+# this --> exam.exam、user.login
 @display.route("/result", endpoint="result")
 @check_login
-@check_init_match
+@check_match_status
 def result():
     if not r.hexists("user:"+session["user"], "finish_time"):
         return redirect(url_for("exam.exam"))
@@ -38,8 +40,9 @@ def result():
     return render_template("result.html", **data)
 
 # 排行榜
+# user.login、display.result --> this
+# this --> display.result
 @display.route("/score_board", endpoint="score_board")
-@check_init_match
 def score_board():
     try:
         page = abs(int(request.args.get("page")))

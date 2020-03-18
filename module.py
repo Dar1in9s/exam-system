@@ -93,8 +93,14 @@ load_match_info()
 load_questions()
 
 if __name__ == '__main__':
-    from sqlalchemy import or_, and_
-    res = Users.query.filter(and_(Users.password == "password", or_(Users.email == "a", Users.username=="asmin"))).first()
-    print(res.format())
+    score_data = {
+        "username": 1,
+        "score": 2,
+        "finish_time": 3,
+        "start_time": 4,
+        "spend_time": 5
+    }
+    a =Score(**score_data)
+    print(a.score)
 
 

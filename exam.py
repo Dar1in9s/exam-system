@@ -1,23 +1,25 @@
-from flask import Blueprint, session, render_template, request, url_for, jsonify, current_app
-from decorator import check_login, check_finished_exam, check_start_exam, check_match_time, check_init_match
+from flask import Blueprint, session, render_template, request, url_for, jsonify, current_app, redirect
+from decorator import check_login, check_finished_exam, check_start_exam, check_match_status, check_timeout
 from exts import r, app
 from module import Score, db
 import time
 
-exam = Blueprint("exam", __name__)
+exam = Blueprint("exam", __name__)  # 【登录，比赛状态正常】
 
-# 答题
+# 答题 【没有完成比赛，没有超时】
+# check_start_time、user.login --> this
+# this --> display.result
 @exam.route('/exam', endpoint="exam")
 @check_login
-@check_init_match
+@check_match_status
 @check_finished_exam
-@check_match_time
+@check_timeout
 def exam_():
     if r.hexists("user:"+session["user"], "start_time"):
-        all_question_id = r.lrange("user_question_id:"+session["user"], 0, r.llen("user_question_id:"+session["user"]))
+        all_question_id = r.lrange("user_question_id:"+session["user"], 0, current_app.config["once_exam_nums"])
     else:
         r.hset("user:"+session["user"], "start_time", int(time.time()))
-        all_question_id = r.srandmember("all_question_id", current_app.config["once_exam_nums"])
+        all_question_id = r.srandmember("all_question_id", current_app.config["once_exam_nums"])  # 抽题
         for i in all_question_id:
             r.rpush("user_question_id:"+session["user"], i)
     questions = []
@@ -31,27 +33,34 @@ def exam_():
         questions.append(question)
     return render_template("exam.html", match_name=app.config['match_name'], questions=questions)
 
-# 交卷检查
-@exam.route("/check_answers", endpoint="check_answers", methods=["POST"])
+# 交卷检查 【已经开始且未完成】
+# check_timeout --> this
+# for exam.exam
+@exam.route("/check_answers", endpoint="check_answers", methods=["GET", "POST"])
 @check_login
-@check_init_match
+@check_match_status
 @check_start_exam
 @check_finished_exam
-@check_match_time
 def check_answers():
     score = 0
-    for q in request.form:
-        if "question" in q:
-            if r.hexists(q, "answer"):
-                if request.form.get(q) == r.hget(q, "answer"):
-                    score += app.config['one_question_score']
+    user_question_id = r.lrange("user_question_id:" + session["user"], 0, app.config["once_exam_nums"])
+    for q_id in user_question_id:
+        q = "question[%s]" % q_id
+        if r.hget("user:" + session["user"], q) == r.hget(q, "answer"):
+            score += app.config['one_question_score']
 
     finish_time = int(time.time())
     start_time = int(r.hget("user:"+session["user"], "start_time"))
     spend_time = finish_time - start_time
     try:
-        add_score = Score(username=session["user"], score=score, finish_time=finish_time, start_time=start_time, spend_time=spend_time)
-        db.session.add(add_score)
+        score_data = {
+            "username": session["user"],
+            "score": score,
+            "finish_time": finish_time,
+            "start_time": start_time,
+            "spend_time": spend_time
+        }
+        db.session.add(Score(**score_data))
         db.session.commit()
         r.hset("user:"+session["user"], "score", score)
         r.hset("user:"+session["user"], "finish_time", finish_time)
@@ -63,27 +72,31 @@ def check_answers():
         message = "交卷失败"
     callback_type = "forward"
     url = url_for("display.result")
-    res = '{"statusCode": %s,"message": "%s","callbackType": "%s","forwardUrl": "%s"}' % (status_code, message, callback_type, url)
-    return res
+    if request.method == "POST":
+        res = '{"statusCode": %s,"message": "%s","callbackType": "%s","forwardUrl": "%s"}' % (status_code, message, callback_type, url)
+        return res
+    return redirect(url_for("display.result"))
 
-# 计时器，已经过去的时间
+# 计时器 【已经开始且未完成，没有超时】
+# for exam.exam
 @exam.route("/match_time", endpoint="match_time")
 @check_login
-@check_init_match
+@check_match_status
 @check_start_exam
 @check_finished_exam
-@check_match_time
+@check_timeout
 def match_time():
     left_time = int(time.time()) - int(r.hget("user:"+session["user"], "start_time"))
     return jsonify({"match_duration": app.config['match_duration'], "left_time": left_time})
 
-# 保存用户的答案
+# 保存用户的答案 【已经开始且未完成，没有超时】
+# for exam.exam
 @exam.route("/save_user_answer", endpoint="save_user_answer", methods=["POST"])
 @check_login
-@check_init_match
+@check_match_status
 @check_start_exam
 @check_finished_exam
-@check_match_time
+@check_timeout
 def save_user_answer():
     try:
         for post in request.form:
@@ -93,13 +106,14 @@ def save_user_answer():
     except:
         return '{"statusCode": 300}'
 
-# 标记题目
+# 标记题目 【已经开始且未完成，没有超时】
+# for exam.exam
 @exam.route("/sign_mark", endpoint="sign_mark")
 @check_login
-@check_init_match
+@check_match_status
 @check_start_exam
 @check_finished_exam
-@check_match_time
+@check_timeout
 def sign_mark():
     try:
         if r.hexists("user:"+session["user"], "mark"+request.args.get('questionid')):
@@ -111,13 +125,14 @@ def sign_mark():
     except:
         return "error"
 
-# 加载用户的数据
+# 加载用户的数据 【已经开始且未完成，没有超时】
+# for exam.exam
 @exam.route("/load_user_data", endpoint="load_user_data")
 @check_login
-@check_init_match
+@check_match_status
 @check_start_exam
 @check_finished_exam
-@check_match_time
+@check_timeout
 def load_user_data():
     res = {}
     all_question_id = r.lrange("user_question_id:"+session["user"], 0, r.llen("user_question_id:"+session["user"]))
